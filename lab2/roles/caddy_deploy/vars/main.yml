@@ -1,0 +1,9 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for caddy_deploy
+
+domain_name: ignatenkov.duckdns.org
+
+log:  # Можно поиграться со значениями
+  file: /var/log/caddy_access.log
+  level: "INFO"

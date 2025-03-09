@@ -1,0 +1,75 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for caddy_deploy
+#
+# ---
+# tasks file for caddy_deploy
+
+- name: Install prerequisites
+  apt:
+    pkg:
+    - debian-keyring
+    - debian-archive-keyring
+    - apt-transport-https
+    - curl
+
+- name: Add key for Caddy repo
+  apt_key:
+    url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key
+    state: present
+    keyring: /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+
+- name: add Caddy repo
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main"
+    state: present
+    filename: caddy-stable
+
+- name: add Caddy src repo
+  apt_repository:
+    repo: "deb-src [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main"
+    state: present
+    filename: caddy-stable
+
+- name: Install Caddy webserver
+  apt:
+    name: caddy
+    update_cache: yes
+    state: present
+
+- name: Create config file
+  template:
+    src: templates/Caddyfile.j2  # Откуда берем
+    dest: /etc/caddy/Caddyfile  # Куда кладем
+
+- name: Add custom headers
+  blockinfile:
+    path: /etc/caddy/Caddyfile
+    block: |
+      header {
+          X-Content-Type-Options "nosniff"
+          X-Frame-Options "DENY"
+          X-XSS-Protection "1; mode=block"
+      }
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - CUSTOM HEADERS"
+    insertafter: "^ignatenkov.duckdns.org {"
+
+
+- name: Add index.html file
+  copy:
+    dest: /usr/share/caddy/index.html
+    content: |
+      <html>
+      <head>
+          <title>Home Page</title>
+      </head>
+      <body style='background:black;color: #fff'>
+          <h1>Меня зовут Николай. Я программист из Санкт-Петербурга. Учусь в ИТМО.</h1>
+          <p>Это 2 задание. Всем спасибо, все свободны.</p>
+      </body>
+      </html>
+
+- name: Reload with new config
+  service:
+    name: caddy
+    state: reloaded

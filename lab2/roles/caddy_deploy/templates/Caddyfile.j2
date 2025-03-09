@@ -1,0 +1,11 @@
+# Основной домен
+{{ domain_name }} {
+    root * /usr/share/caddy
+    file_server
+ 
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+    }
+}

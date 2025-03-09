@@ -1,0 +1,27 @@
+---
+- name: Create file
+  copy:
+    dest: "{{ ansible_env.HOME }}/first_task.txt"
+    content: |
+      Good time for Caddy Baby.
+
+- name: Change content
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/first_task.txt"
+    line: "Sorry>bro"
+
+- name: Read in stdout content of this file
+  shell: cat "{{ ansible_env.HOME }}/first_task.txt"
+  register: output_file_content
+  tags: read_file
+
+- name: Get File DATA
+  debug:
+    msg: "{{ output_file_content.stdout }}"
+  tags: read_file
+
+- name: Delete file
+  file:
+    path: "{{ ansible_env.HOME }}/first_task.txt"
+    state: absent
+  tags: remove_file
